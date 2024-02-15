@@ -1,0 +1,14 @@
+---
+- name: Install Java using ansible-playbook
+  hosts: dev
+  gather_facts: false
+  become: false
+  tasks:
+    - name: copy java file from master to agents
+        win_copy:
+          src: scheduler.ps1
+          dest: C:/Temp
+    - name: change the task scheduler java execute path
+      ansible.windows.win_powershell:
+        script: |
+          C:\Temp\scheduler.ps1 -username "{{ inventory_vars['ansible_user'] }}" -password "{{ inventory_vars['ansible_password'] }}"

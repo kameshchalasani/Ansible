@@ -1,0 +1,25 @@
+---
+- name: Install Java using ansible-playbook
+  hosts: win2
+  gather_facts: false
+  become: false
+  tasks:
+    - name: test connection
+      ansible.windows.win_ping:
+    - name: copy java file from master to agents
+      win_copy:
+        src: jdk-21_windows-x64_bin.msi
+        dest: C:/Temp
+
+    - name: Run Java installations
+      win_shell: Start-Process -Wait -FilePath msiexec -ArgumentList /i, "C:\Temp\jdk-21_windows-x64_bin.msi", /quiet
+
+    - name: Java HOME setup
+      ansible.windows.win_powershell:
+        script: |
+          $java21Dir = "C:\Program Files\Java\jdk-21"
+          [Environment]::SetEnvironmentVariable("JAVA_HOME", $java21Dir, [System.EnvironmentVariableTarget]::Machine)
+          $newPath = "$java21Dir\bin;" + [System.Environment]::GetEnvironmentVariable("PATH", [System.EnvironmentVariableTarget]::Machine)
+          [Environment]::SetEnvironmentVariable("PATH", $newPath, [System.EnvironmentVariableTarget]::Machine)
+          Write-Host "Java 21 environment has been set successfully."
+          java -version
